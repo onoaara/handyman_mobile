@@ -1,13 +1,20 @@
-import { Tabs } from "expo-router";
-import React from "react";
+import { Tabs, router } from "expo-router";
+import React, { useEffect } from "react";
 
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { useAppSelector } from "@/store/hooks";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { user, initializing } = useAppSelector((s) => s.auth);
+
+  useEffect(() => {
+    if (initializing) return;
+    if (!user) router.replace("/login");
+  }, [initializing, user]);
 
   return (
     <Tabs
@@ -18,7 +25,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => (

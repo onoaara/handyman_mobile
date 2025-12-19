@@ -27,6 +27,14 @@ const MAPPING = {
   "message.fill": "chat",
   "list.bullet": "list",
   magnifyingglass: "search",
+  "chart.bar": "bar-chart",
+  gearshape: "settings",
+  creditcard: "credit-card",
+  "mappin.and.ellipse": "place",
+  camera: "photo-camera",
+  "star.fill": "star",
+  eye: "visibility",
+  "eye.slash": "visibility-off",
 } as IconMapping;
 
 /**
