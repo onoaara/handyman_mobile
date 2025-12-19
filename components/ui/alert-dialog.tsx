@@ -1,6 +1,6 @@
+import { ThemedText } from "@/components/themed-text";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { ThemedText } from "@/components/themed-text";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
 
 type Props = {
@@ -47,7 +47,9 @@ export function AppAlertDialog({
           <ThemedText type="subtitle" style={styles.title}>
             {title}
           </ThemedText>
-          {message ? <ThemedText style={styles.message}>{message}</ThemedText> : null}
+          {message ? (
+            <ThemedText style={styles.message}>{message}</ThemedText>
+          ) : null}
           <View style={styles.actions}>
             <Pressable
               style={[styles.button, { borderColor: colors.icon }]}
@@ -120,4 +122,3 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
-

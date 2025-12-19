@@ -7,7 +7,7 @@ export default function AuthLayout() {
 
   useEffect(() => {
     if (initializing) return;
-    if (user) router.replace("/(tabs)");
+    if (user) router.replace("/(tabs)/home");
   }, [initializing, user]);
 
   return (

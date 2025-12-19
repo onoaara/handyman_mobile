@@ -1,3 +1,7 @@
+import { ThemedText } from "@/components/themed-text";
+import { ThemedView } from "@/components/themed-view";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useMemo, useState } from "react";
 import {
   Modal,
@@ -6,10 +10,6 @@ import {
   View,
   type ViewStyle,
 } from "react-native";
-import { ThemedText } from "@/components/themed-text";
-import { ThemedView } from "@/components/themed-view";
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
 import { IconSymbol } from "./icon-symbol";
 
 type Option<T extends string> = {
@@ -52,7 +52,10 @@ export function AppSelectInput<T extends string>({
       {label ? <ThemedText type="subtitle">{label}</ThemedText> : null}
 
       <Pressable
-        style={[styles.inputWrapper, { borderColor: error ? "#ff4d4f" : "#ccc" }]}
+        style={[
+          styles.inputWrapper,
+          { borderColor: error ? "#ff4d4f" : "#ccc" },
+        ]}
         onPress={() => setOpen(true)}
       >
         <ThemedText style={styles.valueText}>
@@ -71,9 +74,16 @@ export function AppSelectInput<T extends string>({
           {error}
         </ThemedText>
       ) : null}
-      {helper && !error ? <ThemedText style={styles.msg}>{helper}</ThemedText> : null}
+      {helper && !error ? (
+        <ThemedText style={styles.msg}>{helper}</ThemedText>
+      ) : null}
 
-      <Modal transparent visible={open} animationType="fade" onRequestClose={() => setOpen(false)}>
+      <Modal
+        transparent
+        visible={open}
+        animationType="fade"
+        onRequestClose={() => setOpen(false)}
+      >
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
           <Pressable onPress={() => null}>
             <ThemedView style={styles.sheet}>
@@ -82,13 +92,18 @@ export function AppSelectInput<T extends string>({
                 return (
                   <Pressable
                     key={o.value}
-                    style={[styles.option, isSelected ? styles.optionSelected : null]}
+                    style={[
+                      styles.option,
+                      isSelected ? styles.optionSelected : null,
+                    ]}
                     onPress={() => {
                       onChange(o.value);
                       setOpen(false);
                     }}
                   >
-                    <ThemedText type={isSelected ? "defaultSemiBold" : "default"}>
+                    <ThemedText
+                      type={isSelected ? "defaultSemiBold" : "default"}
+                    >
                       {o.label}
                     </ThemedText>
                   </Pressable>
