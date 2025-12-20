@@ -1,4 +1,4 @@
-import { Stack, router } from "expo-router";
+import { Href, Stack, router } from "expo-router";
 import { useEffect } from "react";
 import { useAppSelector } from "@/store/hooks";
 
@@ -7,7 +7,10 @@ export default function AuthLayout() {
 
   useEffect(() => {
     if (initializing) return;
-    if (user) router.replace("/(tabs)/home");
+    if (user?.role === "user")
+      router.replace("/user/(tabs)/home" as unknown as Href);
+    if (user?.role === "handyman")
+      router.replace("/handyman/(tabs)/home" as unknown as Href);
   }, [initializing, user]);
 
   return (

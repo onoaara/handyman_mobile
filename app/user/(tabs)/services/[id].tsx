@@ -12,7 +12,7 @@ export default function ServiceDetailScreen() {
       <ThemedText>
         Select options and book a handyman for your {id} needs.
       </ThemedText>
-      <Link href={"/(tabs)/bookings/new" as unknown as Href} asChild>
+      <Link href={"/user/(tabs)/bookings/new" as unknown as Href} asChild>
         <Pressable style={styles.cta}>
           <ThemedText type="subtitle">Book Now</ThemedText>
         </Pressable>

@@ -68,7 +68,6 @@ export default function LoginScreen() {
                 await Haptics.notificationAsync(
                   Haptics.NotificationFeedbackType.Success
                 );
-                router.replace("/(tabs)/home");
               }
             }}
           />

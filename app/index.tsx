@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/store/hooks";
-import { Redirect } from "expo-router";
+import { Href, Redirect } from "expo-router";
 
 export default function Index() {
   const { user, initializing } = useAppSelector((s) => s.auth);
@@ -8,6 +8,10 @@ export default function Index() {
 
   if (!user) return <Redirect href="/login" />;
 
-  return <Redirect href="/(tabs)/home" />;
-}
+  if (user.role === "user")
+    return <Redirect href={"/user/(tabs)/home" as unknown as Href} />;
+  if (user.role === "handyman")
+    return <Redirect href={"/handyman/(tabs)/home" as unknown as Href} />;
 
+  return <Redirect href="/login" />;
+}

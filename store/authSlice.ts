@@ -1,4 +1,4 @@
-import { firebaseAuth, firebaseDb } from "@/lib/firebase";
+import { firebaseAuth, firebaseDb, firebaseStorage } from "@/lib/firebase";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import {
   createUserWithEmailAndPassword,
@@ -8,6 +8,7 @@ import {
   User,
 } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export type Role = "handyman" | "user";
 
@@ -54,11 +55,21 @@ export const signInThunk = createAsyncThunk<
 
 export const signUpThunk = createAsyncThunk<
   AuthUser,
-  { name: string; email: string; password: string; role: Role },
+  {
+    name: string;
+    email: string;
+    password: string;
+    role: Role;
+    location?: string;
+    profilePictureUri?: string | null;
+  },
   { rejectValue: string }
 >(
   "auth/signUp",
-  async ({ name, email, password, role }, { rejectWithValue }) => {
+  async (
+    { name, email, password, role, location, profilePictureUri },
+    { rejectWithValue }
+  ) => {
     try {
       const cred = await createUserWithEmailAndPassword(
         firebaseAuth,
@@ -66,20 +77,48 @@ export const signUpThunk = createAsyncThunk<
         password
       );
       const displayName = name.trim();
-      if (displayName) {
-        await updateProfile(cred.user, { displayName });
-      }
+      const trimmedLocation = location?.trim() || null;
+      let profilePictureUrl: string | null = null;
+      const userRef = doc(firebaseDb, "users", cred.user.uid);
 
       await setDoc(
-        doc(firebaseDb, "users", cred.user.uid),
+        userRef,
         {
           uid: cred.user.uid,
           email: cred.user.email,
           displayName: displayName || cred.user.displayName || null,
-          profilePicture: cred.user.photoURL ?? null,
-          location: null,
+          location: trimmedLocation,
           role,
           createdAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      if (profilePictureUri) {
+        const response = await fetch(profilePictureUri);
+        const blob = await response.blob();
+        const storageRef = ref(
+          firebaseStorage,
+          `profilePictures/${cred.user.uid}`
+        );
+        await uploadBytes(storageRef, blob);
+        profilePictureUrl = await getDownloadURL(storageRef);
+      }
+
+      if (displayName || profilePictureUrl) {
+        await updateProfile(cred.user, {
+          ...(displayName ? { displayName } : {}),
+          ...(profilePictureUrl ? { photoURL: profilePictureUrl } : {}),
+        });
+      }
+
+      await setDoc(
+        userRef,
+        {
+          displayName: displayName || cred.user.displayName || null,
+          profilePicture: profilePictureUrl ?? cred.user.photoURL ?? null,
+          location: trimmedLocation,
+          role,
         },
         { merge: true }
       );
@@ -123,7 +162,12 @@ const authSlice = createSlice({
   reducers: {
     setUser(state, action: PayloadAction<AuthUser | null>) {
       state.user = action.payload;
-      state.initializing = false;
+    },
+    setInitializing(state, action: PayloadAction<boolean>) {
+      state.initializing = action.payload;
+    },
+    setAuthError(state, action: PayloadAction<string | null>) {
+      state.error = action.payload;
     },
     clearError(state) {
       state.error = null;
@@ -165,5 +209,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, clearError } = authSlice.actions;
+export const { setUser, setInitializing, setAuthError, clearError } =
+  authSlice.actions;
 export default authSlice.reducer;

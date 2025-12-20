@@ -7,7 +7,7 @@ import { useColorScheme } from "@/hooks/use-color-scheme";
 import { firebaseAuth, firebaseDb } from "@/lib/firebase";
 import { signOutThunk } from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { router } from "expo-router";
+import { Href, router } from "expo-router";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -177,12 +177,22 @@ export default function ProfileScreen() {
           </View>
 
           <View style={[styles.menu, { borderColor: colors.icon }]}>
-            <MenuItem title="Statistics" icon="chart.bar" onPress={() => {}} />
+            <MenuItem
+              title="Statistics"
+              icon="chart.bar"
+              onPress={() =>
+                router.push(
+                  "/user/(tabs)/profile/statistics" as unknown as Href
+                )
+              }
+            />
             <View style={[styles.divider, { backgroundColor: colors.icon }]} />
             <MenuItem
               title="Settings and Privacy"
               icon="gearshape"
-              onPress={() => {}}
+              onPress={() =>
+                router.push("/user/(tabs)/profile/settings" as unknown as Href)
+              }
             />
             <View style={[styles.divider, { backgroundColor: colors.icon }]} />
             <MenuItem

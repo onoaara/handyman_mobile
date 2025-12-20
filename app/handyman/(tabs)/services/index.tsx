@@ -29,7 +29,7 @@ export default function ServicesScreen() {
           <Link
             href={
               {
-                pathname: "/(tabs)/services/[id]",
+                pathname: "/handyman/(tabs)/services/[id]",
                 params: { id: item.id },
               } as unknown as Href
             }

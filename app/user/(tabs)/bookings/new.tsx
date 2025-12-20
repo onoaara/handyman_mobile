@@ -11,7 +11,7 @@ export default function NewBookingScreen() {
       <TextInput placeholder="Preferred date" style={styles.input} />
       <TextInput placeholder="Preferred time" style={styles.input} />
       <TextInput placeholder="Address" style={styles.input} />
-      <Link href={"/(tabs)/bookings" as unknown as Href} asChild>
+      <Link href={"/user/(tabs)/bookings" as unknown as Href} asChild>
         <Pressable style={styles.cta}>
           <ThemedText type="subtitle">Confirm Booking</ThemedText>
         </Pressable>
