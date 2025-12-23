@@ -147,6 +147,14 @@ export default function ProfileScreen() {
 
           <View style={[styles.menu, { borderColor: colors.icon }]}>
             <MenuItem
+              title="Edit Profile"
+              icon="pencil"
+              onPress={() =>
+                router.push("/handyman/(tabs)/profile/edit" as unknown as Href)
+              }
+            />
+            <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+            <MenuItem
               title="Statistics"
               icon="chart.bar"
               onPress={() =>

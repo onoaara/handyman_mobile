@@ -2,14 +2,19 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { AppButton } from "@/components/ui/button";
 import { AppDropdownNotification } from "@/components/ui/dropdown-notification";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { AppSelectInput } from "@/components/ui/select-input";
 import { AppTextInput } from "@/components/ui/text-input";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { clearError, setAuthError, signUpThunk, type Role } from "@/store/authSlice";
+import {
+  clearError,
+  setAuthError,
+  signUpThunk,
+  type Role,
+} from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import * as Haptics from "expo-haptics";
-import { router } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import { router } from "expo-router";
 import { useState } from "react";
 import {
   Image,
@@ -59,7 +64,10 @@ export default function SignupScreen() {
           <View style={styles.photoRow}>
             <View style={styles.avatarWrap}>
               {profilePictureUri ? (
-                <Image source={{ uri: profilePictureUri }} style={styles.avatar} />
+                <Image
+                  source={{ uri: profilePictureUri }}
+                  style={styles.avatar}
+                />
               ) : (
                 <View style={[styles.avatar, styles.avatarFallback]}>
                   <IconSymbol name="person.fill" size={30} color="#fff" />
@@ -180,7 +188,14 @@ export default function SignupScreen() {
               if (passwordMismatch) return;
               Keyboard.dismiss();
               const result = await dispatch(
-                signUpThunk({ name, email, password, role, location, profilePictureUri })
+                signUpThunk({
+                  name,
+                  email,
+                  password,
+                  role,
+                  location,
+                  profilePictureUri,
+                })
               );
               if (signUpThunk.fulfilled.match(result)) {
                 await Haptics.notificationAsync(

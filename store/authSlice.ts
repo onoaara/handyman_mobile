@@ -1,6 +1,7 @@
 import { supabase, supabaseConfigOk } from "@/lib/supabase";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import type { RootState } from "./store";
 
 export type Role = "handyman" | "user";
 
@@ -12,6 +13,8 @@ export type AuthUser = {
   location: string | null;
   photoUrl: string | null;
 };
+
+const PROFILE_PICTURES_BUCKET = "pictures";
 
 type AuthState = {
   user: AuthUser | null;
@@ -41,6 +44,32 @@ function toAuthUser(user: SupabaseUser): AuthUser {
     location,
     photoUrl,
   };
+}
+
+function guessImageInfoFromUri(uri: string): {
+  ext: "png" | "webp" | "jpg";
+  contentType: string;
+} {
+  const normalized = uri.split("?")[0]?.toLowerCase() ?? "";
+  if (normalized.endsWith(".png"))
+    return { ext: "png", contentType: "image/png" };
+  if (normalized.endsWith(".webp"))
+    return { ext: "webp", contentType: "image/webp" };
+  if (normalized.endsWith(".jpeg"))
+    return { ext: "jpg", contentType: "image/jpeg" };
+  if (normalized.endsWith(".jpg"))
+    return { ext: "jpg", contentType: "image/jpeg" };
+  return { ext: "jpg", contentType: "image/jpeg" };
+}
+
+function formatStoragePolicyHint(bucket: string) {
+  return [
+    "Storage upload blocked by Supabase RLS.",
+    `Create Storage policies for bucket "${bucket}" (or rename the bucket to match).`,
+    "Example policies (SQL Editor):",
+    `create policy "upload own file" on storage.objects for insert to authenticated with check (bucket_id = '${bucket}' and name like auth.uid()::text || '.%');`,
+    `create policy "update own file" on storage.objects for update to authenticated using (bucket_id = '${bucket}' and name like auth.uid()::text || '.%') with check (bucket_id = '${bucket}' and name like auth.uid()::text || '.%');`,
+  ].join("\n");
 }
 
 export const signInThunk = createAsyncThunk<
@@ -112,24 +141,19 @@ export const signUpThunk = createAsyncThunk<
 
       if (profilePictureUri) {
         try {
+          const { ext, contentType } = guessImageInfoFromUri(profilePictureUri);
           const response = await fetch(profilePictureUri);
-          const blob = await response.blob();
-          const ext =
-            blob.type === "image/png"
-              ? "png"
-              : blob.type === "image/webp"
-              ? "webp"
-              : "jpg";
+          const arrayBuffer = await response.arrayBuffer();
           const path = `${data.user.id}.${ext}`;
           const upload = await supabase.storage
-            .from("profile-pictures")
-            .upload(path, blob, {
+            .from(PROFILE_PICTURES_BUCKET)
+            .upload(path, arrayBuffer, {
               upsert: true,
-              contentType: blob.type || undefined,
+              contentType,
             });
           if (!upload.error) {
             const url = supabase.storage
-              .from("profile-pictures")
+              .from(PROFILE_PICTURES_BUCKET)
               .getPublicUrl(path);
             photoUrl = url.data.publicUrl || null;
             if (photoUrl) {
@@ -156,19 +180,92 @@ export const signUpThunk = createAsyncThunk<
   }
 );
 
-export const signOutThunk = createAsyncThunk<
-  void,
-  void,
-  { rejectValue: string }
->("auth/signOut", async (_, { rejectWithValue }) => {
-  try {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
-  } catch (e: unknown) {
-    const message = e instanceof Error ? e.message : "Failed to sign out";
-    return rejectWithValue(message);
+export const signOutThunk = createAsyncThunk<void, void>(
+  "auth/signOut",
+  async () => {
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      try {
+        await supabase.auth.signOut();
+      } catch {
+        return;
+      }
+    }
   }
-});
+);
+
+export const updateProfileThunk = createAsyncThunk<
+  AuthUser,
+  { displayName: string; location: string; profilePictureUri?: string | null },
+  { state: RootState; rejectValue: string }
+>(
+  "auth/updateProfile",
+  async (
+    { displayName, location, profilePictureUri },
+    { getState, rejectWithValue }
+  ) => {
+    try {
+      if (!supabaseConfigOk)
+        return rejectWithValue(
+          "Missing Supabase key (set EXPO_PUBLIC_SUPABASE_ANON_KEY)"
+        );
+      const current = getState().auth.user;
+      if (!current) return rejectWithValue("Not signed in");
+
+      const nextDisplayName = displayName.trim() || null;
+      const nextLocation = location.trim() || null;
+      let nextPhotoUrl: string | null = current.photoUrl;
+
+      if (profilePictureUri) {
+        const response = await fetch(profilePictureUri);
+        const { ext, contentType } = guessImageInfoFromUri(profilePictureUri);
+        const arrayBuffer = await response.arrayBuffer();
+        const path = `${current.uid}.${ext}`;
+        const upload = await supabase.storage
+          .from(PROFILE_PICTURES_BUCKET)
+          .upload(path, arrayBuffer, {
+            upsert: true,
+            contentType,
+          });
+        if (upload.error) {
+          const msg = upload.error.message ?? "Storage upload failed";
+          if (msg.toLowerCase().includes("row-level security"))
+            return rejectWithValue(
+              formatStoragePolicyHint(PROFILE_PICTURES_BUCKET)
+            );
+          return rejectWithValue(msg);
+        }
+        const url = supabase.storage
+          .from(PROFILE_PICTURES_BUCKET)
+          .getPublicUrl(path);
+        nextPhotoUrl = url.data.publicUrl || null;
+      }
+
+      const { data, error } = await supabase.auth.updateUser({
+        data: {
+          role: current.role,
+          displayName: nextDisplayName,
+          location: nextLocation,
+          photoUrl: nextPhotoUrl,
+        },
+      });
+      if (error) throw error;
+
+      if (data.user) return toAuthUser(data.user);
+      return {
+        ...current,
+        displayName: nextDisplayName,
+        location: nextLocation,
+        photoUrl: nextPhotoUrl,
+      };
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : "Failed to update profile";
+      return rejectWithValue(message);
+    }
+  }
+);
 
 const initialState: AuthState = {
   user: null,
@@ -225,7 +322,21 @@ const authSlice = createSlice({
         state.status = "idle";
       })
       .addCase(signOutThunk.rejected, (state, action) => {
-        state.error = action.payload ?? "Failed to sign out";
+        state.user = null;
+        state.status = "idle";
+        state.error = action.error.message ?? "Failed to sign out";
+      })
+      .addCase(updateProfileThunk.pending, (state) => {
+        state.status = "loading";
+        state.error = null;
+      })
+      .addCase(updateProfileThunk.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.user = action.payload;
+      })
+      .addCase(updateProfileThunk.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.payload ?? "Failed to update profile";
       });
   },
 });
