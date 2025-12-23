@@ -4,12 +4,10 @@ import { AppAlertDialog } from "@/components/ui/alert-dialog";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { firebaseAuth, firebaseDb } from "@/lib/firebase";
 import { signOutThunk } from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Href, router } from "expo-router";
-import { doc, getDoc } from "firebase/firestore";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -72,49 +70,20 @@ export default function ProfileScreen() {
   const scheme = useColorScheme();
   const colors = Colors[scheme ?? "light"];
 
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  const [profileDisplayName, setProfileDisplayName] = useState<string | null>(
-    null
-  );
   const [logoutDialogVisible, setLogoutDialogVisible] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      if (!authUser?.uid) return;
-      const snap = await getDoc(doc(firebaseDb, "users", authUser.uid));
-      if (!snap.exists()) return;
-      const data = snap.data() as {
-        displayName?: string | null;
-        profilePicture?: string | null;
-      };
-      if (cancelled) return;
-      setProfileDisplayName(data.displayName ?? null);
-      setProfilePicture(data.profilePicture ?? null);
-    }
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [authUser?.uid]);
-
   const displayName = useMemo(() => {
-    const fallback =
-      authUser?.email?.split("@")[0] ??
-      firebaseAuth.currentUser?.email?.split("@")[0] ??
-      "User";
-    return profileDisplayName ?? authUser?.displayName ?? fallback;
-  }, [authUser?.displayName, authUser?.email, profileDisplayName]);
+    const fallback = authUser?.email?.split("@")[0] ?? "User";
+    return authUser?.displayName ?? fallback;
+  }, [authUser?.displayName, authUser?.email]);
 
   const email = useMemo(() => {
-    return authUser?.email ?? firebaseAuth.currentUser?.email ?? "";
+    return authUser?.email ?? "";
   }, [authUser?.email]);
 
   const photo = useMemo(() => {
-    return profilePicture ?? firebaseAuth.currentUser?.photoURL ?? null;
-  }, [profilePicture]);
+    return authUser?.photoUrl ?? null;
+  }, [authUser?.photoUrl]);
 
   const headerBg = useMemo(() => {
     return colors.tint;

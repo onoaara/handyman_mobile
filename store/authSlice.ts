@@ -1,14 +1,6 @@
-import { firebaseAuth, firebaseDb, firebaseStorage } from "@/lib/firebase";
+import { supabase, supabaseConfigOk } from "@/lib/supabase";
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  updateProfile,
-  User,
-} from "firebase/auth";
-import { doc, serverTimestamp, setDoc } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 export type Role = "handyman" | "user";
 
@@ -17,6 +9,8 @@ export type AuthUser = {
   email: string | null;
   displayName: string | null;
   role: Role | null;
+  location: string | null;
+  photoUrl: string | null;
 };
 
 type AuthState = {
@@ -26,12 +20,26 @@ type AuthState = {
   error: string | null;
 };
 
-function toAuthUser(user: User): AuthUser {
+function toAuthUser(user: SupabaseUser): AuthUser {
+  const meta = (user.user_metadata ?? {}) as Record<string, unknown>;
+  const role =
+    meta.role === "user" || meta.role === "handyman" ? meta.role : null;
+  const displayName =
+    typeof meta.displayName === "string"
+      ? meta.displayName
+      : typeof meta.full_name === "string"
+      ? meta.full_name
+      : null;
+  const location = typeof meta.location === "string" ? meta.location : null;
+  const photoUrl = typeof meta.photoUrl === "string" ? meta.photoUrl : null;
+
   return {
-    uid: user.uid,
-    email: user.email,
-    displayName: user.displayName,
-    role: null,
+    uid: user.id,
+    email: user.email ?? null,
+    displayName,
+    role,
+    location,
+    photoUrl,
   };
 }
 
@@ -41,12 +49,17 @@ export const signInThunk = createAsyncThunk<
   { rejectValue: string }
 >("auth/signIn", async ({ email, password }, { rejectWithValue }) => {
   try {
-    const cred = await signInWithEmailAndPassword(
-      firebaseAuth,
+    if (!supabaseConfigOk)
+      return rejectWithValue(
+        "Missing Supabase key (set EXPO_PUBLIC_SUPABASE_ANON_KEY)"
+      );
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
-    );
-    return toAuthUser(cred.user);
+      password,
+    });
+    if (error) throw error;
+    if (!data.user) return rejectWithValue("Unable to load user session");
+    return toAuthUser(data.user);
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Failed to sign in";
     return rejectWithValue(message);
@@ -71,63 +84,70 @@ export const signUpThunk = createAsyncThunk<
     { rejectWithValue }
   ) => {
     try {
-      const cred = await createUserWithEmailAndPassword(
-        firebaseAuth,
-        email,
-        password
-      );
+      if (!supabaseConfigOk)
+        return rejectWithValue(
+          "Missing Supabase key (set EXPO_PUBLIC_SUPABASE_ANON_KEY)"
+        );
       const displayName = name.trim();
       const trimmedLocation = location?.trim() || null;
-      let profilePictureUrl: string | null = null;
-      const userRef = doc(firebaseDb, "users", cred.user.uid);
+      let photoUrl: string | null = null;
 
-      await setDoc(
-        userRef,
-        {
-          uid: cred.user.uid,
-          email: cred.user.email,
-          displayName: displayName || cred.user.displayName || null,
-          location: trimmedLocation,
-          role,
-          createdAt: serverTimestamp(),
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            displayName: displayName || null,
+            role,
+            location: trimmedLocation,
+            photoUrl: null,
+          },
         },
-        { merge: true }
-      );
+      });
+      if (error) throw error;
+      if (!data.user)
+        return rejectWithValue("Signup succeeded but no user was returned");
+      if (!data.session)
+        return rejectWithValue("Check your email to confirm your account");
 
       if (profilePictureUri) {
-        const response = await fetch(profilePictureUri);
-        const blob = await response.blob();
-        const storageRef = ref(
-          firebaseStorage,
-          `profilePictures/${cred.user.uid}`
-        );
-        await uploadBytes(storageRef, blob);
-        profilePictureUrl = await getDownloadURL(storageRef);
+        try {
+          const response = await fetch(profilePictureUri);
+          const blob = await response.blob();
+          const ext =
+            blob.type === "image/png"
+              ? "png"
+              : blob.type === "image/webp"
+              ? "webp"
+              : "jpg";
+          const path = `${data.user.id}.${ext}`;
+          const upload = await supabase.storage
+            .from("profile-pictures")
+            .upload(path, blob, {
+              upsert: true,
+              contentType: blob.type || undefined,
+            });
+          if (!upload.error) {
+            const url = supabase.storage
+              .from("profile-pictures")
+              .getPublicUrl(path);
+            photoUrl = url.data.publicUrl || null;
+            if (photoUrl) {
+              await supabase.auth.updateUser({ data: { photoUrl } });
+            }
+          }
+        } catch {
+          photoUrl = null;
+        }
       }
-
-      if (displayName || profilePictureUrl) {
-        await updateProfile(cred.user, {
-          ...(displayName ? { displayName } : {}),
-          ...(profilePictureUrl ? { photoURL: profilePictureUrl } : {}),
-        });
-      }
-
-      await setDoc(
-        userRef,
-        {
-          displayName: displayName || cred.user.displayName || null,
-          profilePicture: profilePictureUrl ?? cred.user.photoURL ?? null,
-          location: trimmedLocation,
-          role,
-        },
-        { merge: true }
-      );
 
       return {
-        uid: cred.user.uid,
-        email: cred.user.email,
-        displayName: displayName || cred.user.displayName || null,
+        uid: data.user.id,
+        email: data.user.email ?? null,
+        displayName: displayName || null,
         role,
+        location: trimmedLocation,
+        photoUrl,
       };
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : "Failed to sign up";
@@ -142,7 +162,8 @@ export const signOutThunk = createAsyncThunk<
   { rejectValue: string }
 >("auth/signOut", async (_, { rejectWithValue }) => {
   try {
-    await signOut(firebaseAuth);
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Failed to sign out";
     return rejectWithValue(message);

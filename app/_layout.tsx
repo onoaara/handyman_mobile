@@ -5,14 +5,12 @@ import {
 } from "@react-navigation/native";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
 import { useEffect } from "react";
 import "react-native-reanimated";
 import { Provider } from "react-redux";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { firebaseAuth, firebaseDb } from "@/lib/firebase";
+import { supabase } from "@/lib/supabase";
 import { setAuthError, setInitializing, setUser } from "@/store/authSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { store } from "@/store/store";
@@ -36,87 +34,83 @@ function RootLayoutInner() {
   useEffect(() => {
     let active = true;
 
-    const unsubscribe = onAuthStateChanged(firebaseAuth, (user) => {
-      dispatch(setInitializing(true));
+    function applySessionUser(user: unknown) {
+      const supabaseUser = user as
+        | {
+            id: string;
+            email?: string | null;
+            user_metadata?: Record<string, unknown>;
+          }
+        | null
+        | undefined;
 
-      if (!user) {
+      if (!supabaseUser) {
         dispatch(setUser(null));
         dispatch(setInitializing(false));
         return;
       }
 
-      const baseUser = {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        role: null,
-      } as const;
+      const meta = (supabaseUser.user_metadata ?? {}) as Record<
+        string,
+        unknown
+      >;
+      const role = meta.role as unknown;
+      const location =
+        typeof meta.location === "string" ? meta.location.trim() || null : null;
+      const displayName =
+        typeof meta.displayName === "string"
+          ? meta.displayName.trim() || null
+          : typeof meta.full_name === "string"
+          ? meta.full_name.trim() || null
+          : null;
+      const photoUrl = typeof meta.photoUrl === "string" ? meta.photoUrl : null;
 
-      (async () => {
-        try {
-          const userDocRef = doc(firebaseDb, "users", user.uid);
-          let snap = await getDoc(userDocRef);
+      if (role !== "user" && role !== "handyman") {
+        dispatch(setAuthError("Invalid role"));
+        void supabase.auth.signOut();
+        dispatch(setUser(null));
+        dispatch(setInitializing(false));
+        return;
+      }
 
-          if (!active) return;
+      dispatch(
+        setUser({
+          uid: supabaseUser.id,
+          email: supabaseUser.email ?? null,
+          displayName,
+          role,
+          location,
+          photoUrl,
+        })
+      );
+      dispatch(setInitializing(false));
+    }
 
-          if (!snap.exists()) {
-            const existingStateUser = store.getState().auth.user;
-            const existingRole =
-              existingStateUser?.uid === user.uid
-                ? existingStateUser.role
-                : null;
+    dispatch(setInitializing(true));
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!active) return;
+        applySessionUser(data.session?.user);
+      })
+      .catch(() => {
+        if (!active) return;
+        dispatch(setAuthError("Unable to load session"));
+        dispatch(setUser(null));
+        dispatch(setInitializing(false));
+      });
 
-            if (existingRole === "user" || existingRole === "handyman") {
-              dispatch(setUser({ ...baseUser, role: existingRole }));
-              return;
-            }
-
-            for (let attempt = 0; attempt < 6; attempt++) {
-              await new Promise((r) => setTimeout(r, 250));
-              snap = await getDoc(userDocRef);
-              if (!active) return;
-              if (!snap.exists()) continue;
-
-              const role = snap.data()?.role as unknown;
-              if (role === "user" || role === "handyman") {
-                dispatch(setUser({ ...baseUser, role }));
-                return;
-              }
-
-              dispatch(setAuthError("Invalid role"));
-              await firebaseAuth.signOut();
-              dispatch(setUser(null));
-              return;
-            }
-
-            dispatch(setAuthError("Unable to load role"));
-            await firebaseAuth.signOut();
-            dispatch(setUser(null));
-            return;
-          }
-
-          const role = snap.data()?.role as unknown;
-
-          if (role === "user" || role === "handyman") {
-            dispatch(setUser({ ...baseUser, role }));
-          } else {
-            dispatch(setAuthError("Invalid role"));
-            await firebaseAuth.signOut();
-            dispatch(setUser(null));
-          }
-        } catch {
-          dispatch(setAuthError("Unable to load role"));
-          await firebaseAuth.signOut();
-          dispatch(setUser(null));
-        } finally {
-          if (active) dispatch(setInitializing(false));
-        }
-      })();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      dispatch(setInitializing(true));
+      applySessionUser(session?.user);
     });
 
     return () => {
       active = false;
-      unsubscribe();
+      subscription.unsubscribe();
     };
   }, [dispatch]);
 
@@ -124,8 +118,8 @@ function RootLayoutInner() {
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="user" options={{ headerShown: false }} />
-        <Stack.Screen name="handyman" options={{ headerShown: false }} />
+        <Stack.Screen name="user/(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="handyman/(tabs)" options={{ headerShown: false }} />
         <Stack.Screen
           name="modal"
           options={{ presentation: "modal", title: "Modal" }}

@@ -3,19 +3,12 @@ import { type HomeService } from "@/components/home/service-card";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { AppSearchBar } from "@/components/ui/search-bar";
-import { firebaseAuth, firebaseDb } from "@/lib/firebase";
 import { useAppSelector } from "@/store/hooks";
-import { doc, getDoc } from "firebase/firestore";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Keyboard, ScrollView, StyleSheet } from "react-native";
 
 export default function HomeScreen() {
   const authUser = useAppSelector((s) => s.auth.user);
-  const [profileLocation, setProfileLocation] = useState<string | null>(null);
-  const [profilePicture, setProfilePicture] = useState<string | null>(null);
-  const [profileDisplayName, setProfileDisplayName] = useState<string | null>(
-    null
-  );
   const [search, setSearch] = useState("");
 
   const services = useMemo<HomeService[]>(
@@ -60,45 +53,18 @@ export default function HomeScreen() {
     []
   );
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      if (!authUser?.uid) return;
-      const snap = await getDoc(doc(firebaseDb, "users", authUser.uid));
-      if (!snap.exists()) return;
-      const data = snap.data() as {
-        displayName?: string | null;
-        location?: string | null;
-        profilePicture?: string | null;
-      };
-      if (cancelled) return;
-      setProfileDisplayName(data.displayName ?? null);
-      setProfileLocation(data.location ?? null);
-      setProfilePicture(data.profilePicture ?? null);
-    }
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [authUser?.uid]);
-
   const displayName = useMemo(() => {
-    const fallback =
-      authUser?.email?.split("@")[0] ??
-      firebaseAuth.currentUser?.email?.split("@")[0] ??
-      "User";
-    return profileDisplayName ?? authUser?.displayName ?? fallback;
-  }, [authUser?.displayName, authUser?.email, profileDisplayName]);
+    const fallback = authUser?.email?.split("@")[0] ?? "User";
+    return authUser?.displayName ?? fallback;
+  }, [authUser?.displayName, authUser?.email]);
 
   const location = useMemo(() => {
-    return profileLocation ?? "Location not set";
-  }, [profileLocation]);
+    return authUser?.location ?? "Location not set";
+  }, [authUser?.location]);
 
   const photo = useMemo(() => {
-    return profilePicture ?? firebaseAuth.currentUser?.photoURL ?? null;
-  }, [profilePicture]);
+    return authUser?.photoUrl ?? null;
+  }, [authUser?.photoUrl]);
 
   const filteredServices = useMemo(() => {
     const q = search.trim().toLowerCase();
