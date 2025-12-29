@@ -23,7 +23,7 @@ type Props<T extends string> = {
   error?: string;
   placeholder?: string;
   value: T | null;
-  options: Array<Option<T>>;
+  options: Option<T>[];
   onChange: (value: T) => void;
   style?: ViewStyle;
 };
