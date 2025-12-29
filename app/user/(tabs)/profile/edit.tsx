@@ -136,12 +136,30 @@ export default function EditProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  keyboard: { flex: 1 },
-  screen: { flex: 1, padding: 16 },
-  content: { gap: 14, paddingBottom: 30 },
-  photoRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  avatarWrap: { position: "relative" },
-  avatar: { width: 72, height: 72, borderRadius: 36 },
+  keyboard: {
+    flex: 1,
+  },
+  screen: {
+    flex: 1,
+    padding: 16,
+  },
+  content: {
+    gap: 14,
+    paddingBottom: 30,
+  },
+  photoRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  avatarWrap: {
+    position: "relative",
+  },
+  avatar: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+  },
   avatarFallback: {
     borderWidth: 1,
     borderColor: "#cfe6ff",
@@ -162,7 +180,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#cfe6ff",
   },
-  photoText: { flex: 1, gap: 2 },
-  actions: { gap: 10, marginTop: 8 },
-  cancel: { alignSelf: "center", paddingVertical: 6 },
+  photoText: {
+    flex: 1,
+    gap: 2,
+  },
+  actions: {
+    gap: 10,
+    marginTop: 8,
+  },
+  cancel: {
+    alignSelf: "center",
+    paddingVertical: 6,
+  },
 });
