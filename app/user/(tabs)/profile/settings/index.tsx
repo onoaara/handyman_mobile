@@ -4,7 +4,13 @@ import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { router } from "expo-router";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 function Row({
   title,
@@ -21,10 +27,7 @@ function Row({
   const colors = Colors[scheme ?? "light"];
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
-    >
+    <TouchableOpacity onPress={onPress} style={styles.row}>
       <View style={styles.left}>
         <View style={[styles.iconWrap, { borderColor: colors.icon }]}>
           <IconSymbol name={icon} size={18} color={colors.icon} />
@@ -37,7 +40,7 @@ function Row({
         </View>
       </View>
       <IconSymbol name="chevron.right" size={18} color={colors.icon} />
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 
@@ -48,7 +51,12 @@ export default function SettingsScreen() {
   return (
     <ThemedView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.section, { borderColor: colors.icon }]}>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.surface, borderColor: colors.icon },
+          ]}
+        >
           <Row
             title="Account"
             subtitle="Name, email, password"
@@ -71,7 +79,12 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <View style={[styles.section, { borderColor: colors.icon }]}>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.surface, borderColor: colors.icon },
+          ]}
+        >
           <Row
             title="Help"
             subtitle="Support and FAQs"
@@ -100,14 +113,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
-    padding: 16,
+    padding: 8,
     gap: 14,
   },
   section: {
-    borderWidth: 1,
-    borderRadius: 14,
+    borderWidth: 0.5,
+    borderRadius: 8,
     overflow: "hidden",
-    backgroundColor: "#fff",
   },
   row: {
     paddingHorizontal: 14,
@@ -152,4 +164,3 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
-

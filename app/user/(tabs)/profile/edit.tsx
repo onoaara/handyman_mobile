@@ -60,7 +60,7 @@ export default function EditProfileScreen() {
           keyboardShouldPersistTaps="handled"
           contentContainerStyle={styles.content}
         >
-          <ThemedText type="title">Edit Profile</ThemedText>
+          {/* <ThemedText type="title">Edit Profile</ThemedText> */}
 
           <View style={styles.photoRow}>
             <Pressable onPress={pickImage} style={styles.avatarWrap}>

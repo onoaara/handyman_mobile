@@ -3,8 +3,10 @@ import { Stack } from "expo-router";
 export default function StatisticsLayout() {
   return (
     <Stack>
-      <Stack.Screen name="index" options={{ title: "Statistics" }} />
+      <Stack.Screen
+        name="index"
+        options={{ title: "Statistics", headerShown: false }}
+      />
     </Stack>
   );
 }
-

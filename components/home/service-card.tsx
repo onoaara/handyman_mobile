@@ -21,7 +21,7 @@ function HomeServiceCard({ item, onPress }: CardProps) {
   const colors = Colors[scheme ?? "light"];
 
   const labelBackgroundColor = useMemo(() => {
-    return scheme === "dark" ? "rgba(21,23,24,0.78)" : "rgba(255,255,255,0.82)";
+    return scheme === "dark" ? "rgba(30,41,59,0.78)" : "rgba(248,250,252,0.82)";
   }, [scheme]);
 
   return (

@@ -34,8 +34,8 @@ export default function StatisticsScreen() {
   const colors = Colors[scheme ?? "light"];
 
   const bodyBg = useMemo(() => {
-    return scheme === "dark" ? "#0f1a24" : "#eaf3ff";
-  }, [scheme]);
+    return colors.background;
+  }, [colors.background]);
 
   return (
     <ThemedView style={[styles.screen, { backgroundColor: bodyBg }]}>
@@ -43,12 +43,20 @@ export default function StatisticsScreen() {
         <ThemedText type="title">Overview</ThemedText>
 
         <View style={styles.grid}>
-          <StatCard value="€250" label="Total invoice cost" icon="list.bullet" />
+          <StatCard
+            value="€250"
+            label="Total invoice cost"
+            icon="list.bullet"
+          />
           <StatCard value="4.5" label="Average rating" icon="star.fill" />
         </View>
 
         <View style={styles.grid}>
-          <StatCard value="12" label="Completed jobs" icon="checkmark.seal.fill" />
+          <StatCard
+            value="12"
+            label="Completed jobs"
+            icon="checkmark.seal.fill"
+          />
           <StatCard value="3" label="Active bookings" icon="calendar" />
         </View>
 
@@ -119,4 +127,3 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
 });
-

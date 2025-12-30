@@ -8,7 +8,14 @@ import { signOutThunk } from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { Href, router } from "expo-router";
 import { useMemo, useState } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import {
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 function StatCard({
@@ -47,19 +54,13 @@ function MenuItem({
   const colors = Colors[scheme ?? "light"];
 
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.menuItem,
-        pressed ? styles.pressed : null,
-      ]}
-    >
+    <TouchableOpacity onPress={onPress} style={styles.menuItem}>
       <View style={styles.menuLeft}>
         <IconSymbol name={icon} size={20} color={colors.icon} />
         <ThemedText>{title}</ThemedText>
       </View>
       <IconSymbol name="chevron.right" size={18} color={colors.icon} />
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 
@@ -103,9 +104,9 @@ export default function ProfileScreen() {
       >
         <View style={[styles.header, { backgroundColor: headerBg }]}>
           <View style={[styles.headerTop, { paddingTop: insets.top + 12 }]}>
-            <ThemedText type="subtitle" lightColor="#fff" darkColor="#fff">
+            {/* <ThemedText type="subtitle" lightColor="#fff" darkColor="#fff">
               Profile
-            </ThemedText>
+            </ThemedText> */}
           </View>
 
           <View style={styles.avatarWrap}>
@@ -122,9 +123,9 @@ export default function ProfileScreen() {
                 <IconSymbol name="person.fill" size={34} color="#fff" />
               </View>
             )}
-            <View style={styles.avatarBadge}>
+            {/* <View style={styles.avatarBadge}>
               <IconSymbol name="camera" size={14} color={colors.tint} />
-            </View>
+            </View> */}
           </View>
 
           <ThemedText type="subtitle" lightColor="#fff" darkColor="#fff">
@@ -136,14 +137,14 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.body}>
-          <View style={styles.statsRow}>
+          {/* <View style={styles.statsRow}>
             <StatCard
               value="€250"
               label="Total invoice cost"
               icon="list.bullet"
             />
             <StatCard value="4.5" label="Rating" icon="star.fill" />
-          </View>
+          </View> */}
 
           <View style={[styles.menu, { borderColor: colors.icon }]}>
             <MenuItem
@@ -261,7 +262,7 @@ const styles = StyleSheet.create({
     opacity: 0.9,
   },
   body: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     paddingTop: 14,
     gap: 14,
   },
@@ -288,14 +289,14 @@ const styles = StyleSheet.create({
     opacity: 0.75,
   },
   menu: {
-    borderWidth: 1,
-    borderRadius: 14,
+    borderWidth: 0.5,
+    borderRadius: 8,
     overflow: "hidden",
     backgroundColor: "#fff",
   },
   menuItem: {
-    paddingHorizontal: 14,
-    paddingVertical: 14,
+    paddingHorizontal: 8,
+    paddingVertical: 24,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

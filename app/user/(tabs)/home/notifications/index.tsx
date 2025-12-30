@@ -80,7 +80,15 @@ function NotificationItem({ item, onPress }: NotificationItemProps) {
       onPress={() => onPress(item)}
     >
       <View
-        style={[styles.iconContainer, { backgroundColor: colors.tint + "20" }]}
+        style={[
+          styles.iconContainer,
+          {
+            backgroundColor:
+              scheme === "dark"
+                ? "rgba(59, 130, 246, 0.3)"
+                : "rgba(59, 130, 246, 0.2)",
+          },
+        ]}
       >
         <IconSymbol
           name={getIconName(item.type)}
@@ -112,9 +120,9 @@ export default function NotificationsScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.headerTitle}>
+      {/* <ThemedText type="title" style={styles.headerTitle}>
         Notifications
-      </ThemedText>
+      </ThemedText> */}
       <FlatList
         data={SAMPLE_NOTIFICATIONS}
         keyExtractor={(item) => item.id}

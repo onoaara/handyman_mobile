@@ -1,7 +1,7 @@
+import { ThemedText } from "@/components/themed-text";
+import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { IconSymbol } from "@/components/ui/icon-symbol";
-import { ThemedText } from "@/components/themed-text";
 import { useMemo } from "react";
 import {
   Pressable,
@@ -29,15 +29,12 @@ export function AppSearchBar({
   const colors = Colors[scheme ?? "light"];
 
   const backgroundColor = useMemo(() => {
-    return scheme === "dark" ? "#1f2226" : "#f2f4f7";
-  }, [scheme]);
+    return colors.surface;
+  }, [colors.surface]);
 
   return (
     <View
-      style={[
-        styles.container,
-        { backgroundColor, borderColor: colors.icon },
-      ]}
+      style={[styles.container, { backgroundColor, borderColor: colors.icon }]}
     >
       <IconSymbol name="magnifyingglass" size={20} color={colors.icon} />
       <TextInput
@@ -90,4 +87,3 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
-

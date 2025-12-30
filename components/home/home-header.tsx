@@ -3,8 +3,8 @@ import { ThemedView } from "@/components/themed-view";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import { Link } from "expo-router";
-import { Image, Pressable, StyleSheet, View } from "react-native";
+import { router } from "expo-router";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 type Props = {
@@ -37,11 +37,14 @@ export function HomeHeader({ displayName, location, photo }: Props) {
         <ThemedText type="subtitle">{displayName}</ThemedText>
         <ThemedText>{location}</ThemedText>
       </View>
-      <Link href="/user/(tabs)/home/notifications/index" asChild>
-        <Pressable style={styles.notificationButton}>
-          <IconSymbol name="bell.fill" size={24} color={tint} />
-        </Pressable>
-      </Link>
+      <TouchableOpacity
+        style={styles.notificationButton}
+        onPress={() => {
+          router.push("/user/(tabs)/home/notifications");
+        }}
+      >
+        <IconSymbol name="bell.fill" size={24} color={tint} />
+      </TouchableOpacity>
     </ThemedView>
   );
 }

@@ -8,8 +8,12 @@ export default function HomeLayout() {
         options={{ title: "Home", headerShown: false }}
       />
       <Stack.Screen
-        name="notifications"
-        options={{ title: "Notifications", headerShown: true }}
+        name="notifications/index"
+        options={{
+          title: "Notifications",
+          headerShown: true,
+          headerBackButtonDisplayMode: "minimal",
+        }}
       />
     </Stack>
   );
