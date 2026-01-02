@@ -1,5 +1,8 @@
 import { HomeHeader } from "@/components/home/home-header";
-import { type HomeService } from "@/components/home/service-card";
+import {
+  HomeServiceCards,
+  type HomeService,
+} from "@/components/home/service-card";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { AppSearchBar } from "@/components/ui/search-bar";

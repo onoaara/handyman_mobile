@@ -15,6 +15,14 @@ export default function HomeLayout() {
           headerBackButtonDisplayMode: "minimal",
         }}
       />
+      <Stack.Screen
+        name="services"
+        options={{
+          title: "Services",
+          headerShown: true,
+          headerBackButtonDisplayMode: "minimal",
+        }}
+      />
     </Stack>
   );
 }

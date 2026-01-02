@@ -9,8 +9,15 @@ import { ThemedView } from "@/components/themed-view";
 import { AppSearchBar } from "@/components/ui/search-bar";
 import { supabase } from "@/lib/supabase";
 import { useAppSelector } from "@/store/hooks";
+import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Keyboard, RefreshControl, ScrollView, StyleSheet } from "react-native";
+import {
+  Keyboard,
+  RefreshControl,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 
 export default function HomeScreen() {
   const authUser = useAppSelector((s) => s.auth.user);
@@ -87,11 +94,16 @@ export default function HomeScreen() {
           placeholder="Search services..."
           onSubmit={() => Keyboard.dismiss()}
         />
-        <ThemedText type="title">Services</ThemedText>
+        {/* <ThemedText type="title">Services</ThemedText> */}
         {loading ? (
           <ServiceCardSkeleton />
         ) : (
-          <HomeServiceCards data={filteredServices} />
+          <TouchableOpacity
+            onPress={() => router.push("/user/(tabs)/home/services")}
+          >
+            <ThemedText type="title">Services</ThemedText>
+            <HomeServiceCards data={filteredServices} />
+          </TouchableOpacity>
         )}
       </ScrollView>
     </ThemedView>
