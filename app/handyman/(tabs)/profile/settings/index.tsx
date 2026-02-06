@@ -1,5 +1,6 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { AppButton } from "@/components/ui/button";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
@@ -26,7 +27,7 @@ function Row({
       style={({ pressed }) => [styles.row, pressed ? styles.pressed : null]}
     >
       <View style={styles.left}>
-        <View style={[styles.iconWrap, { borderColor: colors.icon }]}>
+        <View style={[styles.iconWrap, { borderColor: colors.border }]}>
           <IconSymbol name={icon} size={18} color={colors.icon} />
         </View>
         <View style={styles.text}>
@@ -48,21 +49,26 @@ export default function SettingsScreen() {
   return (
     <ThemedView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={[styles.section, { borderColor: colors.icon }]}>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
           <Row
             title="Account"
             subtitle="Name, email, password"
             icon="person.fill"
             onPress={() => {}}
           />
-          <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <Row
             title="Privacy"
             subtitle="Permissions, visibility"
             icon="lock.fill"
             onPress={() => {}}
           />
-          <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <Row
             title="Notifications"
             subtitle="Push and email preferences"
@@ -71,14 +77,19 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <View style={[styles.section, { borderColor: colors.icon }]}>
+        <View
+          style={[
+            styles.section,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
           <Row
             title="Help"
             subtitle="Support and FAQs"
             icon="questionmark.circle"
             onPress={() => {}}
           />
-          <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <Row
             title="About"
             subtitle="App version and legal"
@@ -87,9 +98,12 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Pressable onPress={() => router.back()} style={styles.back}>
-          <ThemedText type="link">Back to Profile</ThemedText>
-        </Pressable>
+        <AppButton
+          variant="ghost"
+          onPress={() => router.back()}
+          title="Back to Profile"
+          style={styles.back}
+        />
       </ScrollView>
     </ThemedView>
   );
@@ -152,4 +166,3 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 });
-

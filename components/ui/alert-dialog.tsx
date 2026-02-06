@@ -1,4 +1,5 @@
 import { ThemedText } from "@/components/themed-text";
+import { AppButton } from "@/components/ui/button";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Modal, Pressable, StyleSheet, View } from "react-native";
@@ -51,30 +52,21 @@ export function AppAlertDialog({
             <ThemedText style={styles.message}>{message}</ThemedText>
           ) : null}
           <View style={styles.actions}>
-            <Pressable
-              style={[styles.button, { borderColor: colors.icon }]}
+            <AppButton
+              variant="outline"
+              title={cancelText}
               onPress={onCancel}
-              accessibilityRole="button"
-            >
-              <ThemedText style={styles.buttonText}>{cancelText}</ThemedText>
-            </Pressable>
-            <Pressable
-              style={[
-                styles.button,
-                styles.primary,
-                { backgroundColor: confirmColor },
-              ]}
+              style={{ flex: 1 }}
+            />
+            <AppButton
+              variant="primary"
+              title={confirmText}
               onPress={onConfirm}
-              accessibilityRole="button"
-            >
-              <ThemedText
-                type="defaultSemiBold"
-                lightColor="#fff"
-                darkColor="#fff"
-              >
-                {confirmText}
-              </ThemedText>
-            </Pressable>
+              style={[
+                { flex: 1 },
+                confirmTone === "destructive" && { backgroundColor: "#ff4d4f" },
+              ]}
+            />
           </View>
         </Pressable>
       </Pressable>
@@ -106,19 +98,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 10,
     marginTop: 6,
-  },
-  button: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-  },
-  primary: {
-    borderWidth: 0,
-  },
-  buttonText: {
-    fontWeight: "600",
   },
 });

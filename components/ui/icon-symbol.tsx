@@ -35,6 +35,10 @@ const MAPPING = {
   "star.fill": "star",
   eye: "visibility",
   "eye.slash": "visibility-off",
+  "building.fill": "store",
+  "phone.fill": "phone",
+  pencil: "edit",
+  "location.fill": "location-on",
 } as IconMapping;
 
 /**

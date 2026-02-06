@@ -1,48 +1,118 @@
-import { ReactNode } from "react";
+import { ThemedText } from "@/components/themed-text";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
+import React, { ReactNode } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  StyleProp,
   StyleSheet,
   View,
-  type StyleProp,
-  type ViewStyle,
+  ViewStyle,
 } from "react-native";
-import { ThemedText } from "@/components/themed-text";
 
-type Props = {
-  title: string;
-  onPress: () => void | Promise<void>;
-  loading?: boolean;
+interface ButtonProps {
+  children?: ReactNode;
+  title?: string; // Backward compatibility
+  variant?: "primary" | "secondary" | "outline" | "ghost";
+  isLoading?: boolean;
+  loading?: boolean; // Backward compatibility
+  fullWidth?: boolean;
+  onPress?: () => void | Promise<void>;
   disabled?: boolean;
-  left?: ReactNode;
   style?: StyleProp<ViewStyle>;
-};
+  left?: ReactNode; // Backward compatibility
+}
 
 export function AppButton({
+  children,
   title,
-  onPress,
+  variant = "primary",
+  isLoading = false,
   loading = false,
-  disabled = false,
-  left,
+  fullWidth = false,
+  onPress,
+  disabled,
   style,
-}: Props) {
-  const isDisabled = disabled || loading;
+  left,
+  ...props
+}: ButtonProps) {
+  const scheme = useColorScheme();
+  const colors = Colors[scheme ?? "light"];
+  const isloadingState = isLoading || loading;
+  const isDisabled = disabled || isloadingState;
+
+  // Define styles based on variant
+  const getBackgroundColor = (pressed: boolean) => {
+    if (isDisabled && variant !== "ghost" && variant !== "outline")
+      return colors.textMuted + "80"; // Opacity 50%
+    if (variant === "primary") return pressed ? colors.tint + "DD" : colors.tint; // Slightly transparent when pressed
+    if (variant === "secondary")
+      return pressed ? colors.surface + "DD" : colors.surface;
+    if (variant === "outline")
+      return pressed ? colors.surface : "transparent";
+    if (variant === "ghost")
+      return pressed ? colors.surface : "transparent";
+    return colors.tint;
+  };
+
+  const getTextColor = () => {
+    if (isDisabled) return colors.background; // Or some muted color
+    if (variant === "primary") return "#ffffff";
+    if (variant === "secondary") return colors.text;
+    if (variant === "outline") return colors.text;
+    if (variant === "ghost") return colors.tint;
+    return "#ffffff";
+  };
+
+  const getBorderColor = () => {
+     if (variant === "outline") return colors.border;
+     return "transparent";
+  };
 
   return (
     <Pressable
-      style={[styles.base, isDisabled ? styles.disabled : null, style]}
       disabled={isDisabled}
       onPress={onPress}
+      style={({ pressed }) => [
+        styles.base,
+        fullWidth && styles.fullWidth,
+        {
+          backgroundColor: getBackgroundColor(pressed),
+          borderColor: getBorderColor(),
+          borderWidth: variant === "outline" ? 1 : 0,
+        },
+        isDisabled && variant === "outline" && { opacity: 0.5 },
+        isDisabled && variant === "ghost" && { opacity: 0.5 },
+        style,
+      ]}
+      {...props}
     >
       <View style={styles.content}>
-        {left ? <View style={styles.left}>{left}</View> : null}
-        {loading ? (
-          <ActivityIndicator color="#fff" />
+        {isloadingState ? (
+          <ActivityIndicator
+            size="small"
+            color={getTextColor()}
+            style={{ marginRight: 8 }}
+          />
         ) : (
-          <ThemedText type="subtitle" lightColor="#fff" darkColor="#fff">
+           left ? <View style={{ marginRight: 8 }}>{left}</View> : null
+        )}
+        
+        {children ? (
+            children
+        ) : title ? (
+          <ThemedText
+            type="defaultSemiBold"
+            style={{
+              color: getTextColor(),
+              fontSize: 14,
+              fontWeight: "600",
+            }}
+          >
             {title}
           </ThemedText>
-        )}
+        ) : null}
       </View>
     </Pressable>
   );
@@ -50,23 +120,19 @@ export function AppButton({
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: 14,
-    borderRadius: 8,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#2f95dc",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    minHeight: 44,
   },
-  disabled: {
-    opacity: 0.6,
+  fullWidth: {
+    width: "100%",
   },
   content: {
     flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  left: {
-    width: 18,
-    height: 18,
     alignItems: "center",
     justifyContent: "center",
   },

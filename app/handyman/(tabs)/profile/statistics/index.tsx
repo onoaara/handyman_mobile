@@ -19,7 +19,12 @@ function StatCard({
   const colors = Colors[scheme ?? "light"];
 
   return (
-    <View style={[styles.card, { borderColor: colors.icon }]}>
+    <View
+      style={[
+        styles.card,
+        { borderColor: colors.border, backgroundColor: colors.surface },
+      ]}
+    >
       <View style={styles.cardTop}>
         <ThemedText type="subtitle">{value}</ThemedText>
         <IconSymbol name={icon} size={18} color={colors.icon} />
@@ -60,7 +65,7 @@ export default function StatisticsScreen() {
           <StatCard value="3" label="Active bookings" icon="calendar" />
         </View>
 
-        <View style={[styles.panel, { borderColor: colors.icon }]}>
+        <View style={[styles.panel, { borderColor: colors.border }]}>
           <ThemedText type="defaultSemiBold">This month</ThemedText>
           <View style={styles.panelRow}>
             <ThemedText style={styles.muted}>Earnings</ThemedText>
@@ -96,9 +101,8 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderRadius: 12,
-    backgroundColor: "#fff",
     padding: 12,
-    gap: 6,
+    gap: 8,
   },
   cardTop: {
     flexDirection: "row",

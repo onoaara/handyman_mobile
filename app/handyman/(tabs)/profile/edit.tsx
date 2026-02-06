@@ -4,6 +4,8 @@ import { AppButton } from "@/components/ui/button";
 import { AppDropdownNotification } from "@/components/ui/dropdown-notification";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { AppTextInput } from "@/components/ui/text-input";
+import { Colors } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 import { clearError, updateProfileThunk } from "@/store/authSlice";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import * as ImagePicker from "expo-image-picker";
@@ -23,11 +25,13 @@ import {
 export default function EditProfileScreen() {
   const dispatch = useAppDispatch();
   const { user, status, error } = useAppSelector((s) => s.auth);
+  const scheme = useColorScheme();
+  const colors = Colors[scheme ?? "light"];
 
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
   const [location, setLocation] = useState(user?.location ?? "");
   const [profilePictureUri, setProfilePictureUri] = useState<string | null>(
-    null
+    null,
   );
 
   const currentPhoto = useMemo(() => {
@@ -67,12 +71,33 @@ export default function EditProfileScreen() {
               {currentPhoto ? (
                 <Image source={{ uri: currentPhoto }} style={styles.avatar} />
               ) : (
-                <View style={[styles.avatar, styles.avatarFallback]}>
-                  <IconSymbol name="person.fill" size={34} color="#2f95dc" />
+                <View
+                  style={[
+                    styles.avatar,
+                    styles.avatarFallback,
+                    {
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                    },
+                  ]}
+                >
+                  <IconSymbol
+                    name="person.fill"
+                    size={34}
+                    color={colors.tint}
+                  />
                 </View>
               )}
-              <View style={styles.cameraBadge}>
-                <IconSymbol name="camera" size={16} color="#2f95dc" />
+              <View
+                style={[
+                  styles.cameraBadge,
+                  {
+                    backgroundColor: colors.background,
+                    borderColor: colors.border,
+                  },
+                ]}
+              >
+                <IconSymbol name="camera" size={16} color={colors.tint} />
               </View>
             </Pressable>
             <View style={styles.photoText}>
@@ -101,7 +126,11 @@ export default function EditProfileScreen() {
             placeholder="Enter your location..."
           />
 
-          <AppTextInput label="Email" value={user.email ?? ""} editable={false} />
+          <AppTextInput
+            label="Email"
+            value={user.email ?? ""}
+            editable={false}
+          />
 
           <View style={styles.actions}>
             <AppButton
@@ -110,16 +139,23 @@ export default function EditProfileScreen() {
               onPress={async () => {
                 Keyboard.dismiss();
                 const result = await dispatch(
-                  updateProfileThunk({ displayName, location, profilePictureUri })
+                  updateProfileThunk({
+                    displayName,
+                    location,
+                    profilePictureUri,
+                  }),
                 );
                 if (updateProfileThunk.fulfilled.match(result)) {
                   router.back();
                 }
               }}
             />
-            <Pressable onPress={() => router.back()} style={styles.cancel}>
-              <ThemedText type="link">Cancel</ThemedText>
-            </Pressable>
+            <AppButton
+              variant="ghost"
+              title="Cancel"
+              onPress={() => router.back()}
+              style={styles.cancel}
+            />
           </View>
         </ScrollView>
       </ThemedView>
@@ -158,4 +194,3 @@ const styles = StyleSheet.create({
   actions: { gap: 10, marginTop: 8 },
   cancel: { alignSelf: "center", paddingVertical: 6 },
 });
-

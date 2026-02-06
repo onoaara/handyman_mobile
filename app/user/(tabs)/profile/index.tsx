@@ -31,7 +31,12 @@ function StatCard({
   const colors = Colors[scheme ?? "light"];
 
   return (
-    <View style={[styles.statCard, { borderColor: colors.icon }]}>
+    <View
+      style={[
+        styles.statCard,
+        { borderColor: colors.border, backgroundColor: colors.surface },
+      ]}
+    >
       <View style={styles.statTop}>
         <ThemedText type="subtitle">{value}</ThemedText>
         <IconSymbol name={icon} size={18} color={colors.icon} />
@@ -146,7 +151,12 @@ export default function ProfileScreen() {
             <StatCard value="4.5" label="Rating" icon="star.fill" />
           </View> */}
 
-          <View style={[styles.menu, { borderColor: colors.icon }]}>
+          <View
+            style={[
+              styles.menu,
+              { borderColor: colors.border, backgroundColor: colors.surface },
+            ]}
+          >
             <MenuItem
               title="Edit Profile"
               icon="pencil"
@@ -154,17 +164,21 @@ export default function ProfileScreen() {
                 router.push("/user/(tabs)/profile/edit" as unknown as Href)
               }
             />
-            <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
             <MenuItem
               title="Statistics"
               icon="chart.bar"
               onPress={() =>
                 router.push(
-                  "/user/(tabs)/profile/statistics" as unknown as Href
+                  "/user/(tabs)/profile/statistics" as unknown as Href,
                 )
               }
             />
-            <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
             <MenuItem
               title="Settings and Privacy"
               icon="gearshape"
@@ -172,13 +186,17 @@ export default function ProfileScreen() {
                 router.push("/user/(tabs)/profile/settings" as unknown as Href)
               }
             />
-            <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
             <MenuItem
               title="Payment options"
               icon="creditcard"
               onPress={() => {}}
             />
-            <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+            <View
+              style={[styles.divider, { backgroundColor: colors.border }]}
+            />
             <MenuItem
               title="Address"
               icon="mappin.and.ellipse"
@@ -254,7 +272,6 @@ const styles = StyleSheet.create({
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -274,7 +291,6 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderRadius: 12,
-    backgroundColor: "#fff",
     padding: 12,
     gap: 6,
   },
@@ -292,7 +308,6 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderRadius: 8,
     overflow: "hidden",
-    backgroundColor: "#fff",
   },
   menuItem: {
     paddingHorizontal: 8,

@@ -1,16 +1,11 @@
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { AppButton } from "@/components/ui/button";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { router } from "expo-router";
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
 function Row({
   title,
@@ -29,7 +24,7 @@ function Row({
   return (
     <TouchableOpacity onPress={onPress} style={styles.row}>
       <View style={styles.left}>
-        <View style={[styles.iconWrap, { borderColor: colors.icon }]}>
+        <View style={[styles.iconWrap, { borderColor: colors.border }]}>
           <IconSymbol name={icon} size={18} color={colors.icon} />
         </View>
         <View style={styles.text}>
@@ -54,7 +49,7 @@ export default function SettingsScreen() {
         <View
           style={[
             styles.section,
-            { backgroundColor: colors.surface, borderColor: colors.icon },
+            { backgroundColor: colors.surface, borderColor: colors.border },
           ]}
         >
           <Row
@@ -63,14 +58,14 @@ export default function SettingsScreen() {
             icon="person.fill"
             onPress={() => {}}
           />
-          <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <Row
             title="Privacy"
             subtitle="Permissions, visibility"
             icon="lock.fill"
             onPress={() => {}}
           />
-          <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <Row
             title="Notifications"
             subtitle="Push and email preferences"
@@ -82,7 +77,7 @@ export default function SettingsScreen() {
         <View
           style={[
             styles.section,
-            { backgroundColor: colors.surface, borderColor: colors.icon },
+            { backgroundColor: colors.surface, borderColor: colors.border },
           ]}
         >
           <Row
@@ -91,7 +86,7 @@ export default function SettingsScreen() {
             icon="questionmark.circle"
             onPress={() => {}}
           />
-          <View style={[styles.divider, { backgroundColor: colors.icon }]} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <Row
             title="About"
             subtitle="App version and legal"
@@ -100,9 +95,12 @@ export default function SettingsScreen() {
           />
         </View>
 
-        <Pressable onPress={() => router.back()} style={styles.back}>
-          <ThemedText type="link">Back to Profile</ThemedText>
-        </Pressable>
+        <AppButton
+          variant="ghost"
+          onPress={() => router.back()}
+          title="Back to Profile"
+          style={styles.back}
+        />
       </ScrollView>
     </ThemedView>
   );
@@ -161,6 +159,5 @@ const styles = StyleSheet.create({
   },
   back: {
     paddingVertical: 10,
-    alignItems: "center",
   },
 });
